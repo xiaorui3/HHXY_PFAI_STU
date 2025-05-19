@@ -131,9 +131,9 @@ func cloneNltkData() error {
 	printColorful("正在克隆nltk_data项目......", "34")
 
 	// 克隆nltk_data仓库
-	if !runCommand([]string{"git", "clone", "https://github.com/nltk/nltk_data.git"}, "克隆nltk_data仓库", "34") {
-		return fmt.Errorf("克隆nltk_data仓库失败")
-	}
+	//if !runCommand([]string{"git", "clone", "https://github.com/nltk/nltk_data.git"}, "克隆nltk_data仓库", "34") {
+	//	return fmt.Errorf("克隆nltk_data仓库失败")
+	//}
 
 	// 设置目标目录
 	targetDir := "/root/nltk_data"
@@ -141,31 +141,27 @@ func cloneNltkData() error {
 		return fmt.Errorf("创建目标目录失败: %v", err)
 	}
 
-	// 复制packages目录内容
-	srcDir := filepath.Join("nltk_data", "packages")
-	if _, err := os.Stat(srcDir); os.IsNotExist(err) {
-		printColorful("nltk_data项目中不存在packages目录", "91")
-	} else {
-		entries, err := os.ReadDir(srcDir)
-		if err != nil {
-			return fmt.Errorf("读取packages目录失败: %v", err)
-		}
+	// 下载必要的NLTK数据文件
+	//filesToDownload := []string{"tokenizers/punkt.zip", "tokenizers/punkt_tab.zip"}
+	//baseURL := "https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/"
 
-		for _, entry := range entries {
-			srcPath := filepath.Join(srcDir, entry.Name())
-			dstPath := filepath.Join(targetDir, entry.Name())
-
-			if entry.IsDir() {
-				if err := copyDir(srcPath, dstPath); err != nil {
-					return fmt.Errorf("复制目录失败: %v", err)
-				}
-			} else {
-				if err := copyFile(srcPath, dstPath); err != nil {
-					return fmt.Errorf("复制文件失败: %v", err)
-				}
-			}
-		}
-	}
+	//for _, file := range filesToDownload {
+	//	url := baseURL + file
+	//	filePath := filepath.Join(targetDir, file)
+	//
+	//	printColorful(fmt.Sprintf("正在下载: %s", url), "34")
+	//	if !runCommand([]string{"curl", "-L", url, "-o", filePath}, "下载NLTK数据文件", "34") {
+	//		return fmt.Errorf("下载文件失败: %s", file)
+	//	}
+	//
+	//	// 解压下载的文件
+	//	if strings.HasSuffix(file, ".zip") {
+	//		printColorful(fmt.Sprintf("正在解压: %s", filePath), "34")
+	//		if err := unzip(filePath, filepath.Dir(filePath)); err != nil {
+	//			printColorful(fmt.Sprintf("解压文件失败: %v", err), "91")
+	//		}
+	//	}
+	//}
 
 	// 清理临时目录
 	if err := os.RemoveAll("nltk_data"); err != nil {
@@ -173,22 +169,20 @@ func cloneNltkData() error {
 	}
 
 	// 解压zip文件
-	filesToExtract := []string{"punkt.zip", "punkt_tab.zip"}
+	localZipPath := filepath.Join(filepath.Dir(os.Args[0]), ".", "punkt_tab.zip")
+	if _, err := os.Stat(localZipPath); err != nil {
+		printColorful(fmt.Sprintf("本地zip文件不存在: %s", localZipPath), "33")
+		return nil
+	}
+
 	extractDir := filepath.Join(targetDir, "tokenizers")
 	if err := os.MkdirAll(extractDir, 0755); err != nil {
 		return fmt.Errorf("创建解压目录失败: %v", err)
 	}
 
-	for _, fileName := range filesToExtract {
-		filePath := filepath.Join(extractDir, fileName)
-		if _, err := os.Stat(filePath); err == nil {
-			printColorful(fmt.Sprintf("正在解压: %s", fileName), "34")
-			if err := unzip(filePath, extractDir); err != nil {
-				printColorful(fmt.Sprintf("解压文件失败: %v", err), "91")
-			}
-		} else {
-			printColorful(fmt.Sprintf("文件不存在，跳过解压: %s", filePath), "33")
-		}
+	printColorful(fmt.Sprintf("正在解压: %s", localZipPath), "34")
+	if err := unzip(localZipPath, extractDir); err != nil {
+		printColorful(fmt.Sprintf("解压文件失败: %v", err), "91")
 	}
 
 	return nil
@@ -267,6 +261,13 @@ func newRootCommand() *rootCommand {
 
 3. 仅执行特定步骤(开发中):
    deploy --step=1-5
+
+4. 程序第一次执行完毕
+	需要进入到HHXY_PFAI\cs6493nlp\qgevalcap目录下
+	再次执行安装环境命令
+	安装完成后
+	在该目录下再次执行命令
+	即可进入系统环境安装界面
 `
 	return c
 }
@@ -299,12 +300,12 @@ func (c *rootCommand) Run(args []string) error {
 	// 安装openjdk-17-jdk
 	runCommand([]string{"apt", "install", "-y", "openjdk-17-jdk"}, "安装openjdk-17-jdk", "36")
 	// 克隆LLaMA-Factory仓库
-	if !runCommand([]string{"git", "clone", "https://github.com/hiyouga/LLaMA-Factory.git"}, "克隆LLaMA-Factory仓库", "36") {
+	if !runCommand([]string{"git", "clone", "https://github.com/hiyouga/LLaMA-Factory.git", "LLaMA-Factory"}, "克隆LLaMA-Factory仓库", "36") {
 		printColorful("克隆仓库失败，程序终止", "91")
 		return nil
 	}
 	// 复制PFAI目录
-	srcDir := "../../LLaMA-Factory/PFAI/"
+	srcDir := filepath.Join(filepath.Dir(os.Args[0]), "..", "PFAI")
 	dstDir := "./LLaMA-Factory/PFAI/"
 	if err := copyDir(srcDir, dstDir); err != nil {
 		printColorful(fmt.Sprintf("复制目录失败: %v", err), "91")
@@ -312,8 +313,8 @@ func (c *rootCommand) Run(args []string) error {
 	}
 
 	// 复制dataset_info.json文件
-	srcFile := "./dataset_info.json"
-	dstPath := "./LLaMA-Factory/data/"
+	srcFile := filepath.Join(filepath.Dir(os.Args[0]), "dataset_info.json")
+	dstPath := filepath.Join(filepath.Dir(os.Args[0]), "LLaMA-Factory", "data")
 	if err := os.MkdirAll(dstPath, 0755); err != nil {
 		printColorful(fmt.Sprintf("创建目录失败: %v", err), "91")
 		return nil
@@ -323,14 +324,14 @@ func (c *rootCommand) Run(args []string) error {
 		return nil
 	}
 	// 安装requirements.txt依赖
-	runCommand([]string{"pip", "install", "-r", "requirements.txt"}, "安装requirements.txt中列出的依赖", "35")
+	runCommand([]string{"pip", "install", "-r", "LLaMA-Factory/requirements.txt"}, "安装requirements.txt中列出的依赖", "35")
 	// 安装额外Python依赖
 	runCommand([]string{"pip", "install", "transformers_stream_generator", "bitsandbytes", "tiktoken", "auto-gptq", "optimum", "autoawq"}, "安装额外的Python依赖", "34")
 	runCommand([]string{"pip", "install", "--upgrade", "tensorflow"}, "升级tensorflow", "32")
 	runCommand([]string{"pip", "install", "vllm==0.4.3"}, "安装vllm", "33")
 	runCommand([]string{"pip", "install", "torch==2.1.2", "torchvision==0.16.2", "torchaudio==2.1.2", "--index-url", "https://download.pytorch.org/whl/cu121"}, "安装特定版本的PyTorch", "36")
 	runCommand([]string{"pip", "install", "tensorflow==2.12.0"}, "安装tensorflow 2.12.0", "35")
-	runCommand([]string{"pip", "install", "-e", ".[metrics]"}, "安装LLaMA-Factory的metrics模块", "32")
+	runCommand([]string{"pip", "install", "-e", "LLaMA-Factory/[metrics]"}, "安装LLaMA-Factory的metrics模块", "32")
 	runCommand([]string{"pip", "install", "ijson", "pyaml"}, "安装额外的Python依赖", "34")
 	// 克隆nltk_data
 	if err := cloneNltkData(); err != nil {
@@ -342,7 +343,122 @@ func (c *rootCommand) Run(args []string) error {
 	return nil
 }
 
+func checkProjectStructure() bool {
+	requiredDirs := []string{
+		"cs6493nlp/qgevalcap",
+		"LLaMA-Factory",
+		"go",
+	}
+
+	// 检查HHXY_PFAI目录是否存在
+	if _, err := os.Stat("HHXY_PFAI"); err == nil {
+		// 如果HHXY_PFAI存在，严格检查所有必需子目录
+		allDirsExist := true
+		for _, dir := range requiredDirs {
+			if _, err := os.Stat(filepath.Join("HHXY_PFAI", dir)); os.IsNotExist(err) {
+				allDirsExist = false
+				break
+			}
+		}
+		if !allDirsExist {
+			return false
+		}
+		return true
+	}
+
+	// 检查HHXY_PFAI_STU目录是否存在
+	if _, err := os.Stat("HHXY_PFAI_STU"); err == nil {
+		return true
+	}
+
+	// 检查当前目录结构
+	for _, dir := range requiredDirs {
+		if _, err := os.Stat(dir); os.IsNotExist(err) {
+			return false
+		}
+	}
+	return true
+}
+
+func downloadAndSetupProject() error {
+	printColorful("警告：请使用root权限运行此程序以确保所有操作能正常执行。", "91")
+	printColorful("注意：此程序将下载约120MB的项目文件并安装必要的依赖环境。", "33")
+
+	// 检查HHXY_PFAI_STU目录是否已存在
+	if _, err := os.Stat("HHXY_PFAI_STU"); err == nil {
+		printColorful("HHXY_PFAI_STU目录已存在，跳过克隆步骤", "33")
+		return nil
+	}
+
+	printColorful("正在从GitHub下载项目源码...", "34")
+	if !runCommand([]string{"git", "clone", "--filter=blob:none", "https://github.com/xiaorui3/HHXY_PFAI_STU.git", "HHXY_PFAI_STU"}, "克隆项目仓库(跳过LFS文件)", "34") {
+		//return fmt.Errorf("克隆项目失败")
+	}
+
+	// 确保目标目录存在
+	targetDir := filepath.Join("HHXY_PFAI_STU", "cs6493nlp", "qgevalcap")
+	if err := os.MkdirAll(targetDir, 0755); err != nil {
+		return fmt.Errorf("创建目标目录失败: %v", err)
+	}
+
+	// 获取当前可执行文件路径
+	exePath, err := os.Executable()
+	if err != nil {
+		return fmt.Errorf("获取可执行文件路径失败: %v", err)
+	}
+
+	// 复制当前程序到目标目录
+	targetPath := filepath.Join(targetDir, filepath.Base(exePath))
+	if err := copyFile(exePath, targetPath); err != nil {
+		return fmt.Errorf("复制可执行文件失败: %v", err)
+	}
+
+	// 移动临时目录到项目目录
+	if _, err := os.Stat("HHXY_PFAI_STU"); os.IsNotExist(err) {
+		return fmt.Errorf("源目录HHXY_PFAI_STU不存在")
+	}
+	if _, err := os.Stat("HHXY_PFAI"); err == nil {
+		printColorful("警告：目标目录HHXY_PFAI已存在，将继续执行文件复制操作", "33")
+	}
+	// 检查HHXY_PFAI是否存在且是文件还是目录
+	if fi, err := os.Stat("HHXY_PFAI"); err == nil {
+		if !fi.IsDir() {
+			// 如果是文件则删除
+			if err := os.Remove("HHXY_PFAI"); err != nil {
+				return fmt.Errorf("删除文件失败: %v", err)
+			}
+			if err := os.Rename("HHXY_PFAI_STU", "HHXY_PFAI"); err != nil {
+				return fmt.Errorf("重命名目录失败: %v", err)
+			}
+		} else {
+			// 如果是目录则直接使用
+			printColorful("警告：HHXY_PFAI目录已存在，将继续使用现有目录", "33")
+		}
+	} else {
+		// 不存在则重命名
+		if err := os.Rename("HHXY_PFAI_STU", "HHXY_PFAI"); err != nil {
+			return fmt.Errorf("重命名目录失败: %v", err)
+		}
+	}
+
+	absPath, _ := filepath.Abs(targetPath)
+	// 替换路径中的HHXY_PFAI_STU为HHXY_PFAI
+	correctedPath := strings.Replace(absPath, "HHXY_PFAI_STU", "HHXY_PFAI", 1)
+	printColorful(fmt.Sprintf("项目已设置完成，请运行以下命令:\n%s", correctedPath), "32")
+	printColorful("注意：由于HHXY_PFAI目录已存在，部分文件可能已更新，请检查是否需要覆盖。", "33")
+	return nil
+}
+
 func main() {
+	if !checkProjectStructure() {
+		printColorful("当前目录结构不符合HHXY_PFAI项目要求", "91")
+		if err := downloadAndSetupProject(); err != nil {
+			printColorful(fmt.Sprintf("自动设置失败: %v", err), "91")
+			return
+		}
+		return
+	}
+
 	cli.NewApplication(newRootCommand).
 		SetProperty(app.BannerDisabled, true).
 		Run()

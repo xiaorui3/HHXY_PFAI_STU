@@ -1,4 +1,4 @@
-module HHXY_PFAI
+module HHXY
 
 go 1.23.0
 
