@@ -1,0 +1,6 @@
+nohup: 忽略输入
+Traceback (most recent call last):
+  File "/home/netzone22/hhxy/cs6493nlp/qgevalcap/自动化脚本.py", line 37, in <module>
+    __=input()
+       ^^^^^^^
+OSError: [Errno 9] Bad file descriptor

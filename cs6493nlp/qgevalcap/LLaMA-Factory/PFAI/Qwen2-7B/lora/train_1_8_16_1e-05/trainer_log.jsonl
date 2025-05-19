@@ -1,0 +1,6 @@
+{"current_steps": 1, "total_steps": 1875, "loss": 1.7721, "lr": 9.999992981616292e-06, "epoch": 0.0016, "percentage": 0.05, "elapsed_time": "0:00:08", "remaining_time": "4:31:14", "throughput": 757.24, "total_tokens": 6576}
+{"current_steps": 2, "total_steps": 1875, "loss": 1.7454, "lr": 9.999971926484865e-06, "epoch": 0.0032, "percentage": 0.11, "elapsed_time": "0:00:16", "remaining_time": "4:21:19", "throughput": 783.65, "total_tokens": 13120}
+{"current_steps": 3, "total_steps": 1875, "loss": 1.5768, "lr": 9.99993683466483e-06, "epoch": 0.0048, "percentage": 0.16, "elapsed_time": "0:00:25", "remaining_time": "4:22:27", "throughput": 803.93, "total_tokens": 20288}
+{"current_steps": 4, "total_steps": 1875, "loss": 1.3792, "lr": 9.999887706254703e-06, "epoch": 0.0064, "percentage": 0.21, "elapsed_time": "0:00:33", "remaining_time": "4:21:10", "throughput": 809.49, "total_tokens": 27120}
+{"current_steps": 5, "total_steps": 1875, "loss": 1.297, "lr": 9.999824541392404e-06, "epoch": 0.008, "percentage": 0.27, "elapsed_time": "0:00:41", "remaining_time": "4:21:25", "throughput": 812.6, "total_tokens": 34080}
+{"current_steps": 6, "total_steps": 1875, "loss": 1.1115, "lr": 9.99974734025526e-06, "epoch": 0.0096, "percentage": 0.32, "elapsed_time": "0:00:50", "remaining_time": "4:22:10", "throughput": 814.9, "total_tokens": 41152}

@@ -1,0 +1,8 @@
+adapter_name_or_path: ./PFAI/Qwen2-7B/lora/train_8_8_16_8e-05
+export_device: cpu
+export_dir: ./PFAI/models/8_8_16_8e-05
+export_legacy_format: false
+export_size: 5
+finetuning_type: lora
+model_name_or_path: /home/netzone22/hhxy/model/qwen27
+template: llama3
